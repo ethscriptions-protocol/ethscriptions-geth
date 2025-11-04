@@ -248,7 +248,7 @@ func (miner *Miner) prepareWork(genParams *generateParams) (*environment, error)
 	}
 	if header.ParentBeaconRoot != nil {
 		context := core.NewEVMBlockContext(header, miner.chain, nil, miner.chainConfig, env.state)
-		vmenv := vm.NewEVM(context, vm.TxContext{}, env.state, miner.chainConfig, vm.Config{})
+		vmenv := vm.NewEVM(context, vm.TxContext{}, env.state, miner.chainConfig, miner.evmConfig)
 		core.ProcessBeaconBlockRoot(*header.ParentBeaconRoot, vmenv, env.state)
 	}
 	return env, nil
@@ -328,7 +328,7 @@ func (miner *Miner) applyTransaction(env *environment, tx *types.Transaction) (*
 		snap = env.state.Snapshot()
 		gp   = env.gasPool.Gas()
 	)
-	receipt, err := core.ApplyTransaction(miner.chainConfig, miner.chain, &env.coinbase, env.gasPool, env.state, env.header, tx, &env.header.GasUsed, vm.Config{})
+	receipt, err := core.ApplyTransaction(miner.chainConfig, miner.chain, &env.coinbase, env.gasPool, env.state, env.header, tx, &env.header.GasUsed, miner.evmConfig)
 	if err != nil {
 		env.state.RevertToSnapshot(snap)
 		env.gasPool.SetGas(gp)

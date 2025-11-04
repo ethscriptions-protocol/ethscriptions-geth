@@ -31,6 +31,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/txpool"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/eth/tracers"
 	"github.com/ethereum/go-ethereum/params"
 )
@@ -84,10 +85,15 @@ type Miner struct {
 	pendingMu   sync.Mutex // Lock protects the pending block
 
 	backend Backend
+
+	// evmConfig is the EVM execution configuration used during payload building.
+	// It must match the vm.Config used by block validation to ensure
+	// self-consistent gas accounting.
+	evmConfig vm.Config
 }
 
 // New creates a new miner with provided config.
-func New(eth Backend, config Config, engine consensus.Engine) *Miner {
+func New(eth Backend, config Config, engine consensus.Engine, evmConfig vm.Config) *Miner {
 	return &Miner{
 		backend:     eth,
 		config:      &config,
@@ -96,6 +102,7 @@ func New(eth Backend, config Config, engine consensus.Engine) *Miner {
 		txpool:      eth.TxPool(),
 		chain:       eth.BlockChain(),
 		pending:     &pending{},
+		evmConfig:   evmConfig,
 	}
 }
 
